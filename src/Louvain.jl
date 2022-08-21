@@ -93,7 +93,7 @@ function louvain_hierarchical(g::SimpleWeightedGraph{S, T}) where {S<:Integer, T
             c2::Vector{Int64} = findall(x->x==j, c)
             SimpleWeightedGraphs.add_edge!(new_g, i, j, sum(map(x->x.weight, 
                 filter(x -> (x.src ∈ c1 && x.dst ∈ c2) || 
-                (x.src ∈ c2 && x.dst ∈ c1), collect(edges(g)))))
+                (x.src ∈ c2 && x.dst ∈ c1), collect(SimpleWeightedGraphs.edges(g)))))
             )
         end
         g = deepcopy(new_g)

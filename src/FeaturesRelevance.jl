@@ -1,7 +1,7 @@
 
 module FeaturesRelevance
 
-include("CorrelationGraph.jl")
+include("SimmilarityGraphs.jl")
 include("Louvain.jl")
 include("ModularityMaximization.jl")
 include("NCClustering.jl")
