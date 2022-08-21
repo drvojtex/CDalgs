@@ -28,7 +28,7 @@ function clusterdataset(dataset::T, clustering::Function,
     plot(clusters_matrix_colors)
 end
 
-p1 = clusterdataset(MNIST(:train), g->nc_clustering(g), d->correlation_graph(d))
-p2 = clusterdataset(MNIST(:test), g->nc_clustering(g), d->correlation_graph(d))
+p1 = clusterdataset(MNIST(:train).features, g->nc_clustering(g), d->correlation_graph(d))
+p2 = clusterdataset(MNIST(:test).features, g->nc_clustering(g), d->correlation_graph(d))
 
 plot(p1, p2, layout = (1, 2), legend = false)

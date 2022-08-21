@@ -19,7 +19,9 @@ function nc_update_community!(g::SimpleWeightedGraph{S, T}, ranking::Function,
         community::Vector{Int64}, priorities::Vector{Int64}) where {S<:Integer, T<:Real}
 
     N::Vector{Int64} = intersect(
-        setdiff(unique(mapreduce(x -> neighbors(g, x), vcat, community)), community),
+        setdiff(unique(mapreduce(
+            x -> SimpleWeightedGraphs.neighbors(g, x), vcat, community
+        )), community),
         priorities
     )
     if length(N) == 0 return community end
@@ -70,10 +72,10 @@ function nc_clustering(g::SimpleWeightedGraph{S, T};
 
     used_vertices = Vector{Int64}([]) 
 
-    while length(used_vertices) != length(vertices(g))
+    while length(used_vertices) != length(SimpleWeightedGraphs.vertices(g))
 
         # prioritise vertices which was not used
-        priorities::Vector{Int64} = setdiff(vertices(g), used_vertices)
+        priorities::Vector{Int64} = setdiff(SimpleWeightedGraphs.vertices(g), used_vertices)
         priorities_sort(x) = sum(g.weights[:,x])
         sort!(priorities, by=priorities_sort, rev=true)
 
@@ -84,7 +86,7 @@ function nc_clustering(g::SimpleWeightedGraph{S, T};
 
     end
 
-    result = zeros(length(vertices(g)))
+    result = zeros(length(SimpleWeightedGraphs.vertices(g)))
     for i::Int64=1:length(communities)
         map(x -> result[x] = Int(i), collect.(communities)[i])
     end
