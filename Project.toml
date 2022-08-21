@@ -1,0 +1,5 @@
+[deps]
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
+SimpleWeightedGraphs = "47aef6b3-ad0c-573a-a1e2-d07658019622"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
