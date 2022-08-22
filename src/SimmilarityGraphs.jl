@@ -36,7 +36,7 @@ correlations at the given level of significance.
 data::Matrix{<:AbstractFloat} - data matrix shape(batch, features).
 α::Float64=.05 - level of significance (default 0.05).
 """
-function mycorrelation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
+function correlation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
     n = size(data)[2]  # features count
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
