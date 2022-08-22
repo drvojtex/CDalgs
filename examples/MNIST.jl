@@ -16,6 +16,9 @@ function clusterdataset(dataset::T, clustering::Function,
     )')
     
     g::SimpleWeightedGraph = graph(data_vec)
+
+    return g
+
     clusters::Vector{Int64} = clustering(g)    
     clusters_matrix::Matrix{Int64} = reshape(clusters, (n, n))
 
