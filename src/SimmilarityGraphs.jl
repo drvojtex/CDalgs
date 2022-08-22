@@ -65,9 +65,12 @@ function wilcoxon_graph(data::Matrix{<:AbstractFloat})
                 SimpleWeightedGraphs.add_edge!(g, i, j, abs(median(data[:,i]) - median(data[:,j]))) 
         end end
     , 1:n)
+    return g
+    #=
     m::Float64 = maximum(g.weights)
     for i=1:n for j=1:i if i != j if Graphs.has_edge(g, i, j) 
         g.weights[i, j] = m - g.weights[i, j] + 0.001
     end end end end
     return g
+    =#
 end
