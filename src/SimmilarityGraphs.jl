@@ -33,9 +33,9 @@ end
     When 'b' is true, the populations 'X' and 'Y' have got the same median.
     """ ->
 function wilcoxon(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
-    xydiff::Vector{Float64} = filter(x->x!=0, X.-Y) 
+    xydiff::Vector{<:AbstractFloat} = filter(x->x!=0, X.-Y) 
+    if length(xydiff) == 0 return 0, 0, true end
     df = DataFrame(diff = xydiff, absdiff = abs.(xydiff))
-    sort!(df, [order(:absdiff)])
     df[!, :sgn] = sign.(df[!, :diff])
     df[!, :Rᵢ] = 1:length(df[!, :diff])
     W::Int64 = min(sum(filter(x->x.sgn==-1, df)[!, :Rᵢ]), 
