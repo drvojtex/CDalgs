@@ -12,7 +12,7 @@ function clusterdataset(dataset::T, clustering::Function,
     n::Int64 = size(dataset)[1]
 
     data_vec::Matrix = collect(hcat(
-        map(x -> vec(x), eachslice(dataset.+10e-20, dims=3))...
+        map(x -> vec(x), eachslice(dataset, dims=3))...
     )')
     
     g::SimpleWeightedGraph = graph(data_vec)
@@ -27,7 +27,7 @@ function clusterdataset(dataset::T, clustering::Function,
     plot(clusters_matrix_colors)
 end
 
-p1 = clusterdataset(MNIST(:train).features, g->louvain_clustering(g), d->correlation_graph(d))
-p2 = clusterdataset(MNIST(:test).features, g->louvain_clustering(g), d->correlation_graph(d))
+p1 = clusterdataset(MNIST(:train).features, g->louvain_clustering(g), d->wilcoxon_graph(d))
+p2 = clusterdataset(MNIST(:test).features, g->louvain_clustering(g), d->wilcoxon_graph(d))
 
 plot(p1, p2, layout = (1, 2), legend = false)
