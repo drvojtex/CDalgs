@@ -35,6 +35,7 @@ end
 function wilcoxon(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
     xydiff::Vector{<:AbstractFloat} = filter(x->x!=0, X.-Y) 
     if length(xydiff) == 0 return 0, 0, true end
+    @show length(xydiff)
     df = DataFrame(diff = xydiff, absdiff = abs.(xydiff))
     df[!, :sgn] = sign.(df[!, :diff])
     df[!, :Rᵢ] = 1:length(df[!, :diff])
