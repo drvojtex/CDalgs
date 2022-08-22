@@ -44,7 +44,7 @@ function wilcoxon(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
     z::Float64 = mapreduce(xy->xy[1]*xy[2], +, zip(df[!,:sgn], df[!,:Rᵢ]))
     N::Int64 = size(df)[1]
     z = z/sqrt(N*(N+1)*(2*N+1)/6)
-    return W, z, abs(z) <= 1.96
+    return W, z, abs(z) <= 1.65 #1.96
 end
 
 """
