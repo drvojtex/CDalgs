@@ -7,7 +7,7 @@ include("ModularityMaximization.jl")
 include("NCClustering.jl")
 include("Visualise.jl")
 
-export correlation_graph
+export correlation_graph, wilcoxon_graph
 export nc_clustering, modmax_clustering, louvain_clustering
 export gml
 
