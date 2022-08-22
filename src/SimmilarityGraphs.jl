@@ -32,7 +32,7 @@ end
     where 'W' is W-value, 'z' is z-score and 'b' is the test result for the First type error 0.05. 
     When 'b' is true, the populations 'X' and 'Y' have got the same median.
     """ ->
-function wilcoxon(X::Vector{Float64}, Y::Vector{Float64})
+function wilcoxon(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
     xydiff::Vector{Float64} = filter(x->x!=0, X.-Y) 
     df = DataFrame(diff = xydiff, absdiff = abs.(xydiff))
     sort!(df, [order(:absdiff)])
