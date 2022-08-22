@@ -4,25 +4,6 @@ using Statistics, HypothesisTests, DataFrames
 using ThreadTools
 
 
-"""
-    correlation_graph(data; α=.05)
-
-Create correlation graph of statistically significant 
-correlations at the given level of significance.
-
-data::Matrix{<:AbstractFloat} - data matrix shape(batch, features).
-α::Float64=.05 - level of significance (default 0.05).
-"""
-function correlation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
-    n = size(data)[2]  # features count
-    g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
-    for i=1:n for j=1:i if i != j
-        p::Float64 = pvalue(CorrelationTest(data[:,i], data[:,j]))
-        if p <= α SimpleWeightedGraphs.add_edge!(g, i, j, cor(data[:,i], data[:,j])) end
-    end end end
-    return g
-end
-
 @doc """
     Wilcoxon sing-rank non-parametric test to check if two populations have the 
     same median. 
@@ -39,36 +20,34 @@ function wilcoxon(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
     df = DataFrame(diff = xydiff, absdiff = abs.(xydiff))
     df[!, :sgn] = sign.(df[!, :diff])
     df[!, :Rᵢ] = 1:length(df[!, :diff])
-    W::Int64 = min(sum(filter(x->x.sgn==-1, df)[!, :Rᵢ]), 
-                    sum(filter(x->x.sgn==1, df)[!, :Rᵢ]))
+    #W::Int64 = min(sum(filter(x->x.sgn==-1, df)[!, :Rᵢ]), sum(filter(x->x.sgn==1, df)[!, :Rᵢ]))
     z::Float64 = mapreduce(xy->xy[1]*xy[2], +, zip(df[!,:sgn], df[!,:Rᵢ]))
     N::Int64 = size(df)[1]
     z = z/sqrt(N*(N+1)*(2*N+1)/6)
-    return W, z, abs(z) <= 1.65 #1.96
+    return abs(z) <= 1.96
 end
 
 """
-    wilcoxon_graph(data; α=.05)
+    correlation_graph(data; α=.05)
 
-Create the graph of statistically significant 
-differences of medians at the given level of significance.
+Create correlation graph of statistically significant 
+correlations at the given level of significance.
 
 data::Matrix{<:AbstractFloat} - data matrix shape(batch, features).
+α::Float64=.05 - level of significance (default 0.05).
 """
-function wilcoxon_graph(data::Matrix{<:AbstractFloat})
+function correlation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
     n = size(data)[2]  # features count
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
-    tmap(i -> 
-        for j=1:i
-            _, _, b::Bool = wilcoxon(data[:,i], data[:,j])
-            if b
-                SimpleWeightedGraphs.add_edge!(g, i, j, abs(median(data[:,i]) - median(data[:,j]))+10e-20) 
-        end end
-    , 1:n)
-    return g
-    m::Float64 = maximum(g.weights)
-    for i=1:n for j=1:i if i != j if Graphs.has_edge(g, i, j) 
-        g.weights[i, j] = m - g.weights[i, j] + 10e-20
-    end end end end
+    for i=1:n for j=1:i if i != j
+        if isnan(cor(data[:,i], data[:,j]))
+            if wilcoxon(data[:, i], data[:, j])
+                SimpleWeightedGraphs.add_edge!(g, i, j, 1.0)
+            end
+        else
+            p::Float64 = pvalue(CorrelationTest(data[:,i], data[:,j]))
+            if p <= α SimpleWeightedGraphs.add_edge!(g, i, j, cor(data[:,i], data[:,j])) end
+        end
+    end end end
     return g
 end
