@@ -16,7 +16,7 @@ using ThreadTools
     """ ->
 function wilcoxon(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
     xydiff::Vector{<:AbstractFloat} = filter(x->x!=0, X.-Y) 
-    if length(xydiff) == 0 return 0, 0, true end
+    if length(xydiff) == 0 true end
     df = DataFrame(diff = xydiff, absdiff = abs.(xydiff))
     df[!, :sgn] = sign.(df[!, :diff])
     df[!, :Rᵢ] = 1:length(df[!, :diff])
@@ -36,7 +36,7 @@ correlations at the given level of significance.
 data::Matrix{<:AbstractFloat} - data matrix shape(batch, features).
 α::Float64=.05 - level of significance (default 0.05).
 """
-function correlation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
+function mycorrelation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
     n = size(data)[2]  # features count
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
