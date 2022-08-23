@@ -81,7 +81,6 @@ function louvain_hierarchical(g::SimpleWeightedGraph{S, T}) where {S<:Integer, T
     c::Vector{Int64} = collect(SimpleWeightedGraphs.vertices(g))
     prev_c::Vector{Int64} = zeros(2)
     while length(c) > 1 && prev_c != c
-        @show length(c)
         prev_c = deepcopy(c)
         c = louvain_communities!(g, l)
         new_g::SimpleWeightedGraph{Int64, Float64} = SimpleWeightedGraph(length(unique(c)))

@@ -14,14 +14,11 @@ function clusterdataset(dataset::T, clustering::Function,
     data_vec::Matrix = collect(hcat(
         map(x -> vec(x), eachslice(dataset, dims=3))...
     )')
-    for i=1:size(data_vec)[1] for j=1:size(data_vec)[2]
-        data_vec[i,j] += randn()
-    end end
     
     g::SimpleWeightedGraph = graph(data_vec)
 
-    clusters::Vector{Int64} = clustering(g)    
-    clusters_matrix::Matrix{Int64} = reshape(clusters, (n, n))
+    clusters::Vector{Int64} = clustering(g)
+    clusters_matrix::Matrix{Int64} = transpose(reshape(clusters, (n, n)))
 
     clusters_matrix_colors = fill(RGB(0, 0, 0), (n, n))
     colors_vec = map(x->RGB(rand(1)[1], rand(1)[1], rand(1)[1]), 1:length(unique(clusters)))
@@ -31,7 +28,20 @@ function clusterdataset(dataset::T, clustering::Function,
     plot(clusters_matrix_colors)
 end
 
-p1 = clusterdataset(MNIST(:train).features, g->louvain_clustering(g), d->correlation_graph(d))
-p2 = clusterdataset(MNIST(:test).features, g->louvain_clustering(g), d->correlation_graph(d))
+trn_nc = []
+tst_nc = []
+for i=0:9
+    append!(trn_nc, [clusterdataset(MNIST(:train).features[:,:,findall(x->x==i, MNIST(:train).targets)], g->nc_clustering(g), d->correlation_graph(d))])
+    append!(tst_nc, [clusterdataset(MNIST(:test).features[:,:,findall(x->x==i, MNIST(:test).targets)], g->nc_clustering(g), d->correlation_graph(d))])
+end
+append!(trn_nc, [clusterdataset(MNIST(:train).features, g->nc_clustering(g), d->correlation_graph(d))])
+append!(tst_nc, [clusterdataset(MNIST(:test).features, g->nc_clustering(g), d->correlation_graph(d))])
 
-plot(p1, p2, layout = (1, 2), legend = false)
+trn_lc = []
+tst_lc = []
+for i=0:9
+    append!(trn_lc, [clusterdataset(MNIST(:train).features[:,:,findall(x->x==i, MNIST(:train).targets)], g->louvain_clustering(g), d->correlation_graph(d))])
+    append!(tst_lc, [clusterdataset(MNIST(:test).features[:,:,findall(x->x==i, MNIST(:test).targets)], g->louvain_clustering(g), d->correlation_graph(d))])
+end
+append!(trn_lc, [clusterdataset(MNIST(:train).features, g->louvain_clustering(g), d->correlation_graph(d))])
+append!(tst_lc, [clusterdataset(MNIST(:test).features, g->louvain_clustering(g), d->correlation_graph(d))])
