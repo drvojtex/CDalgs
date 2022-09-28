@@ -19,7 +19,7 @@ function clusterdataset(dataset::T, clustering::Function,
 
     clusters::Vector{Int64} = clustering(g)
     clusters_matrix::Matrix{Int64} = transpose(reshape(clusters, (n, n)))
-
+    
     clusters_matrix_colors = fill(RGB(0, 0, 0), (n, n))
     colors_vec = map(x->RGB(rand(1)[1], rand(1)[1], rand(1)[1]), 1:length(unique(clusters)))
     for i::Int64=1:n for j::Int64=1:n
