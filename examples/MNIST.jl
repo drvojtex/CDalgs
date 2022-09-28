@@ -45,3 +45,4 @@ for i=0:9
 end
 append!(trn_lc, [clusterdataset(MNIST(:train).features, g->louvain_clustering(g), d->correlation_graph(d))])
 append!(tst_lc, [clusterdataset(MNIST(:test).features, g->louvain_clustering(g), d->correlation_graph(d))])
+
