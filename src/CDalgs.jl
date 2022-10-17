@@ -1,5 +1,5 @@
 
-module FeaturesRelevance
+module CDalgs
 
 include("SimmilarityGraphs.jl")
 include("Louvain.jl")
