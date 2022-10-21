@@ -3,7 +3,7 @@ module CDalgs
 
 include("SimmilarityGraphs.jl")
 include("Louvain.jl")
-include("ModularityMaximization.jl")
+include("ModMax.jl")
 include("NCClustering.jl")
 include("Visualise.jl")
 

@@ -18,14 +18,16 @@ priorities::Vector - vertices sorted by the priority by which the vertices shoul
 function nc_update_community!(g::SimpleWeightedGraph{S, T}, ranking::Function,
         community::Vector{Int64}, priorities::Vector{Int64}) where {S<:Integer, T<:Real}
 
+    # vector of neighbors of the community without any community assigment
     N::Vector{Int64} = intersect(
         setdiff(unique(mapreduce(
             x -> SimpleWeightedGraphs.neighbors(g, x), vcat, community
         )), community),
         priorities
     )
-    if length(N) == 0 return community end
+    if length(N) == 0 return community end  # if there cannot be added any vertex
 
+    # add the vertex which maximise the ranking function (which result is at least 0.9)
     tmp_communities::Vector{Vector{Int64}} = map(x -> union(community, x), N) 
     new_community::Vector{Int64} = tmp_communities[argmax(map(x -> ranking(x), tmp_communities))]
     return 0.9 <= ranking(new_community) ? new_community : community
@@ -56,7 +58,7 @@ end
     nc_communities(g; ranking=x->r(x))
 
 Find the near-clique-communities in the given graph g::SimpleWeightedGraph{Int64, Float64} by the 
-ranking function (default graph density).
+ranking function (default graph density) and priority sorting (default degree of vertex).
 
 Default ranking is given as:
 ```
@@ -64,20 +66,23 @@ Default ranking is given as:
 ```
 """
 function nc_clustering(g::SimpleWeightedGraph{S, T}; 
-        ranking::Function = x::Vector{Int64} -> length(x) == 1 ? 1 : Graphs.density(g[x])
-            ) where {S<:Integer, T<:Real}
-    
-    # set of found communities
-    communities = Set{Set{Int64}}([])
+        ranking=Nothing, priority=Nothing) where {S<:Integer, T<:Real}
 
-    used_vertices = Vector{Int64}([]) 
+    if ranking == Nothing
+        ranking = x::Vector{Int64} -> length(x) == 1 ? 1 : Graphs.density(g[x])
+    end
+    if priority == Nothing
+        priority = x::Int64 -> sum(g.weights[:,x])
+    end
+
+    communities = Set{Set{Int64}}([]) # set of found communities
+    used_vertices = Set{Int64}([]) # set of used vertices
 
     while length(used_vertices) != length(SimpleWeightedGraphs.vertices(g))
 
         # prioritise vertices which was not used
         priorities::Vector{Int64} = setdiff(SimpleWeightedGraphs.vertices(g), used_vertices)
-        priorities_sort(x) = sum(g.weights[:,x])
-        sort!(priorities, by=priorities_sort, rev=true)
+        sort!(priorities, by=priority, rev=true)
 
         # find new community
         new_com::Set{Int64} = Set(nc_community(g, priorities[1], ranking, priorities))
@@ -86,6 +91,7 @@ function nc_clustering(g::SimpleWeightedGraph{S, T};
 
     end
 
+    # create vector of vertices attendace to the communities
     result = zeros(length(SimpleWeightedGraphs.vertices(g)))
     for i::Int64=1:length(communities)
         map(x -> result[x] = Int(i), collect.(communities)[i])
