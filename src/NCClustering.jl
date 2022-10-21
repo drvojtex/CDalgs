@@ -87,7 +87,7 @@ function nc_clustering(g::SimpleWeightedGraph{S, T};
         # find new community
         new_com::Set{Int64} = Set(nc_community(g, priorities[1], ranking, priorities))
         push!(communities, new_com)
-        push!(used_vertices, collect(new_com))
+        union!(used_vertices, new_com)
 
     end
 
