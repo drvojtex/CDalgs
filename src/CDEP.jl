@@ -1,4 +1,6 @@
 
+using Graphs, SimpleWeightedGraphs
+
 ##############################################
 # vertex structure
 
@@ -12,6 +14,20 @@ Base.@kwdef mutable struct cdep_vertex
     community::Int64 = 0
 end
 
+function Base.show(io::IO, v::cdep_vertex)
+    v_id::String = string("\033[1;34m vertex id:\033[31m ", v.id, "\n\033[0m")
+    ns::String = string("\033[1;34m neighbors:\033[0m ", join(string.(keys(v.neighbors)), " "), "\n")
+    
+    is::String = string("\033[1;34m included:\033[0m ", join(string.(v.included), " "), "\n")
+    is = length(v.included) > 0 ? is : ""
+    
+    den::String = string("\033[1;34m density:\033[0m ", round(v.density, digits=2), "\n")
+    qua::String = string("\033[1;34m quality:\033[0m ", round(v.quality, digits=2), "\n")
+
+    com::String = string("\033[1;34m community id:\033[0m ", v.community, "\n")
+
+    print(io, v_id, ns, is, den, qua, com)
+end
 
 ##############################################
 # Compressing
@@ -164,15 +180,25 @@ function seed_determination!(gc::Vector{cdep_vertex})
     end
     seeds::Vector{cdep_vertex} = filter(x -> x.centrality_index >= γ[argmax(h)], gc)
     while any(x -> intersect(keys(x.neighbors), map(x -> x.id, seeds)) != Set([]), seeds)
-        for v1 in seeds 
-            filter!(x -> intersect(keys(x.neighbors), map(x -> x.id, seeds)) == Set([]), seeds)
+        
+        # if there are two seeds that are neighbors, filter one of
+        for v1 in seeds # !!!!!!!!!!!!
+            if intersect(keys(v1.neighbors), map(x -> x.id, seeds)) != Set([])
+                filter!(y -> y != v1, seeds)
+                break
+            end
         end
     end
 
     for i::Int64=1:length(seeds)
         seeds[i].community = i
     end
+
+    nothing
 end
+
+##############################################
+# Expansion
 
 """
 simmilarity(vertex, community, g)
@@ -210,27 +236,72 @@ function simmilarity(vertex::Int64, community::Int64, g::Vector{cdep_vertex})
     return sim_1 + sim_2
 end
 
-g = [
-    cdep_vertex(id=1, neighbors=Dict(2=>1)), 
-    cdep_vertex(id=2, neighbors=Dict(1=>1, 3=>1, 4=>1)), 
-    cdep_vertex(id=3, neighbors=Dict(2=>1, 4=>1, 5=>1, 6=>1)), 
-    cdep_vertex(id=4, neighbors=Dict(2=>1, 3=>1, 5=>1, 6=>1, 7=>1)), 
-    cdep_vertex(id=5, neighbors=Dict(3=>1, 4=>1, 6=>1)),
-    cdep_vertex(id=6, neighbors=Dict(3=>1, 4=>1, 5=>1, 9=>1)),
-    cdep_vertex(id=7, neighbors=Dict(4=>1, 8=>1)),
-    cdep_vertex(id=8, neighbors=Dict(7=>1, 9=>1, 11=>1)),
-    cdep_vertex(id=9, neighbors=Dict(6=>1, 8=>1, 10=>1, 12=>1, 13=>1)),
-    cdep_vertex(id=10, neighbors=Dict(9=>1, 11=>1, 12=>1)),
-    cdep_vertex(id=11, neighbors=Dict(8=>1, 10=>1, 12=>1)),
-    cdep_vertex(id=12, neighbors=Dict(9=>1, 10=>1, 11=>1, 13=>1)),
-    cdep_vertex(id=13, neighbors=Dict(9=>1, 12=>1, 14=>1)),
-    cdep_vertex(id=14, neighbors=Dict(13=>1, 15=>1)),
-    cdep_vertex(id=15, neighbors=Dict(14=>1))
-]
-gc = deepcopy(g)
-compressing!(gc)
-compute_indices!(g, gc)
-seed_determination!(gc)
-for id in map(x->x.id, gc)
-    @show id, simmilarity(id, 1, gc), simmilarity(id, 2, gc)
+"""
+expand!(g)
+
+Assign communities to the vertices by the assigned seeds.
+
+g::Vector{cdep_vertex} - graph with assigned seeds but other vertices without communities assigned.
+"""
+function expand!(g::Vector{cdep_vertex})
+    tmp_g::Vector{cdep_vertex} = deepcopy(g)
+    while any(x -> x.community == 0, g)
+        for v::cdep_vertex in filter(x -> x.community == 0, g)
+            c_neighbors::Vector{Int64} = filter(z -> z != 0, (unique(map(x -> x.community, 
+                filter(y -> y.id ∈ keys(v.neighbors), g)))))
+            if length(c_neighbors) > 0
+                probs::Vector{Float64} = map(x -> simmilarity(v.id, x, g), c_neighbors)
+                if maximum(probs) != -Inf
+                    tmp_g[findall(x -> x.id == v.id, tmp_g)][1].community = c_neighbors[argmax(probs)]
+                end
+            end
+        end
+        g .= deepcopy(tmp_g)
+    end
+    nothing
 end
+
+"""
+propagation(gc, vc)
+
+Assign communities to the vertices by the assigned seeds.
+
+gc::Vector{cdep_vertex} - compressed graph with assigned communities.
+vc::Int64 - count of vertices in the original graph.
+"""
+function propagation(gc::Vector{cdep_vertex}, vc::Int64)
+    result::Vector{Int64} = zeros(vc)
+    for v::cdep_vertex in gc
+        result[v.id] = v.community
+        for i::Int64 in v.included
+            result[i] = v.community
+        end
+    end
+    return result
+end
+
+"""
+    cdep_clustering(g)
+
+Find communities by CDEP algorithm for a given graph.
+
+g::SimpleWeightedGraph - graph to be explored.
+"""
+function cdep_clustering(g::SimpleWeightedGraph)
+    cdep_graph::Vector{cdep_vertex} = []
+    for v::Int64 in vertices(g)
+        append!(cdep_graph, [cdep_vertex(
+            id=v, 
+            neighbors=Dict(neighbors(g, v) .=> collect(G.weights[v, neighbors(G, v)]))
+            )]
+        )
+    end
+    cdep_graph_c = deepcopy(cdep_graph)
+    compressing!(cdep_graph_c)
+    compute_indices!(cdep_graph, cdep_graph_c)
+    seed_determination!(cdep_graph_c)
+    expand!(cdep_graph_c)
+    propagation(cdep_graph_c, length(vertices(g)))
+end
+
+cdep_clustering(g::SimpleGraph{Int64}) = cdep_clustering(SimpleWeightedGraph(g))
