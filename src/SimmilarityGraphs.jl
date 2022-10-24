@@ -48,12 +48,14 @@ function correlation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
     for i=1:n for j=1:i if i != j
         if isnan(cor(data[:,i], data[:,j]))
             data_diff::Vector{Float64} = data[:, i] .- data[:, j]
-            df::DataFrame = DataFrame(y=data_diff, x=1:length(data_diff))
-            reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
-            outliers::Vector{Int64} = bch(reg)["outliers"]
-            deleteat!(data_diff, outliers)
             if wilcoxon(data_diff)[1]
-                SimpleWeightedGraphs.add_edge!(g, i, j, 1.0)
+                df::DataFrame = DataFrame(y=data_diff, x=1:length(data_diff))
+                reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
+                outliers::Vector{Int64} = bch(reg)["outliers"]
+                deleteat!(data_diff, outliers)
+                if wilcoxon(data_diff)[1]
+                    SimpleWeightedGraphs.add_edge!(g, i, j, 1.0)
+                end 
             end
         else
             p::Float64 = pvalue(CorrelationTest(data[:,i], data[:,j]))
@@ -77,12 +79,14 @@ function correlation_graph(data::Array{<:AbstractFloat, 3})
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
         d::Vector{Float64} = diag(cor(data[:, i, :], data[:, j, :]))
-        df::DataFrame = DataFrame(y=d, x=1:length(d))
-        reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
-        outliers::Vector{Int64} = bch(reg)["outliers"]
-        deleteat!(d, outliers)
         if !wilcoxon(d)[1]
-            SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
+            df::DataFrame = DataFrame(y=d, x=1:length(d))
+            reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
+            outliers::Vector{Int64} = bch(reg)["outliers"]
+            deleteat!(d, outliers)
+            if !wilcoxon(d)[1]
+                SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
+            end
         end
     end end end
     return g
