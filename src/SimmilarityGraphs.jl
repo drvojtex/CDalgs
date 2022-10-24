@@ -11,9 +11,10 @@ using ThreadTools
     # Examples
     ```jldoctest
     b::Bool, W::Int64, z::Float64 = wilcoxon(xydiff::Vector{<:AbstractFloat})
+    b::Bool, W::Int64, z::Float64 = wilcoxo(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
     ```
     where 'W' is W-value, 'z' is z-score and 'b' is the test result for the First type error 0.05. 
-    When 'b' is true, the populations 'X' and 'Y' have got the same median.
+    When 'b' is true, the populations 'X' and 'Y' have got the same median (or the diference has median about zero).
     """ ->
 function wilcoxon(xydiff::Vector{<:AbstractFloat})
     if length(xydiff) == 0 return true end
@@ -28,16 +29,6 @@ function wilcoxon(xydiff::Vector{<:AbstractFloat})
     return b, W, z
 end
 
-@doc """
-    Wilcoxon sing-rank non-parametric test to check 
-    if two populations have the same median. 
-    # Examples
-    ```jldoctest
-    b::Bool, W::Int64, z::Float64 = wilcoxon(X::Vector{Float64}, Y::Vector{Float64})
-    ```
-    where 'W' is W-value, 'z' is z-score and 'b' is the test result for the First type error 0.05. 
-    When 'b' is true, the populations 'X' and 'Y' have got the same median.
-    """ ->
 function wilcoxon(X::Vector{<:AbstractFloat}, Y::Vector{<:AbstractFloat})
     wilcoxon(filter(x->x!=0, X.-Y))
 end
@@ -56,7 +47,12 @@ function correlation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
         if isnan(cor(data[:,i], data[:,j]))
-            if wilcoxon(data[:, i], data[:, j])[1]
+            data_diff::Vector{Float64} = data[:, i] .- data[:, j]
+            df::DataFrame = DataFrame(y=data_diff, x=1:length(data_diff))
+            reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
+            outliers::Vector{Int64} = bch(reg)["outliers"]
+            deleteat!(data_diff, outliers)
+            if wilcoxon(data_diff)[1]
                 SimpleWeightedGraphs.add_edge!(g, i, j, 1.0)
             end
         else
