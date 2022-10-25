@@ -289,7 +289,7 @@ g::SimpleWeightedGraph - graph to be explored.
 """
 function cdep_clustering(g::SimpleWeightedGraph)
     cdep_graph::Vector{cdep_vertex} = []
-    for v::Int64 in vertices(g)
+    for v::Int64 in Graphs.vertices(g)
         append!(cdep_graph, [cdep_vertex(
             id=v, 
             neighbors=Dict(neighbors(g, v) .=> collect(G.weights[v, neighbors(G, v)]))
@@ -301,7 +301,7 @@ function cdep_clustering(g::SimpleWeightedGraph)
     compute_indices!(cdep_graph, cdep_graph_c)
     seed_determination!(cdep_graph_c)
     expand!(cdep_graph_c)
-    propagation(cdep_graph_c, length(vertices(g)))
+    propagation(cdep_graph_c, length(Graphs.vertices(g)))
 end
 
 cdep_clustering(g::SimpleGraph{Int64}) = cdep_clustering(SimpleWeightedGraph(g))
