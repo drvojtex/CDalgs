@@ -292,7 +292,8 @@ function cdep_clustering(g::SimpleWeightedGraph)
     for v::Int64 in Graphs.vertices(g)
         append!(cdep_graph, [cdep_vertex(
             id=v, 
-            neighbors=Dict(neighbors(g, v) .=> collect(G.weights[v, neighbors(G, v)]))
+            neighbors=Dict(Graphs.neighbors(g, v) .=> 
+                collect(G.weights[v, Graphs.neighbors(G, v)]))
             )]
         )
     end
