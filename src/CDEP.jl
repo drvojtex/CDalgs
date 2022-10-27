@@ -118,7 +118,7 @@ vertex_density(v, g)
 Compute the density of the given vertex.
 
 v::cdep_vertex - vertex to be density computed. 
-g::Vector{cdep_vertex} - original graph before seeding.
+g::Vector{cdep_vertex} - original graph before compressing.
 """
 function vertex_density!(v::cdep_vertex, g::Vector{cdep_vertex})
     if length(v.neighbors) == 0 && length(v.included) > 1
@@ -137,7 +137,7 @@ vertex_quality(v, g)
 Compute the quality of the given vertex.
 
 v::cdep_vertex - vertex to be quality computed. 
-g::Vector{cdep_vertex} - original graph before seeding.
+gc::Vector{cdep_vertex} - graph after compressing.
 """
 function vertex_quality!(v::cdep_vertex)
     v.quality = length(v.included)
@@ -153,10 +153,10 @@ g::Vector{cdep_vertex} - original graph before seeding.
 gc::Vector{cdep_vertex} - compressed graph after the seeding.
 """
 function compute_indices!(g::Vector{cdep_vertex}, gc::Vector{cdep_vertex})
-    for v::cdep_vertex in gc
-        vertex_quality!(v)
-        vertex_density!(v, g)
-    end
+    
+    map(v::cdep_vertex -> vertex_quality!(v), gc)
+    map(v::cdep_vertex -> vertex_density!(v, g), gc)
+
     max_density::Float64 = maximum(map(x -> x.density, gc))
     max_quality::Float64 = maximum(map(x -> x.quality, gc))
     map(x -> x.density/=max_density, gc)
@@ -182,7 +182,7 @@ function seed_determination!(gc::Vector{cdep_vertex})
     while any(x -> intersect(keys(x.neighbors), map(x -> x.id, seeds)) != Set([]), seeds)
         
         # if there are two seeds that are neighbors, filter one of
-        for v1 in seeds # !!!!!!!!!!!!
+        for v1 in seeds
             if intersect(keys(v1.neighbors), map(x -> x.id, seeds)) != Set([])
                 filter!(y -> y != v1, seeds)
                 break
