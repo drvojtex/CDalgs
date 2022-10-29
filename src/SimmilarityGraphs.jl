@@ -67,15 +67,16 @@ The outliers are of correlation are filtered by Billor & Chatterjee & Hadi metho
 
 data::Matrix{<:AbstractFloat} - data matrix shape(batch, agents, features).
 """
-function correlation_graph(data::Array{<:AbstractFloat, 3})
+function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter=false)
     n = size(data)[2]  # agents count
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
         d::Vector{Float64} = diag(cor(data[:, i, :], data[:, j, :]))
-        df::DataFrame = DataFrame(y=d, x=1:length(d))
-        reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
-        outliers::Vector{Int64} = bch(reg)["outliers"]
-        deleteat!(d, outliers)
+        if outfilter
+            df::DataFrame = DataFrame(y=d, x=1:length(d))
+            reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
+            outliers::Vector{Int64} = bch(reg)["outliers"]
+            deleteat!(d, outliers)
         if !wilcoxon(d)[1]
             SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
         end
