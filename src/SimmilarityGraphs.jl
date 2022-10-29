@@ -77,6 +77,7 @@ function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter=false)
             reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
             outliers::Vector{Int64} = bch(reg)["outliers"]
             deleteat!(d, outliers)
+        end
         if !wilcoxon(d)[1]
             SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
         end
