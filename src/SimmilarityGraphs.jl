@@ -59,13 +59,14 @@ function correlation_graph(data::Matrix{<:AbstractFloat}; α::Float64=.05)
 end
 
 """
-    correlation_graph(data; α=.05)
+    correlation_graph(data; outfilter=false)
 
 Create correlation graph of statistically significant 
 correlations of the agents at the given level of significance 0.05. 
 The outliers are of correlation are filtered by Billor & Chatterjee & Hadi method.
 
 data::Matrix{<:AbstractFloat} - data matrix shape(batch, agents, features).
+outlilter::Bool - if true, use outliers filtering.
 """
 function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter=false)
     n = size(data)[2]  # agents count
@@ -79,6 +80,19 @@ function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter=false)
             deleteat!(d, outliers)
         end
         if !wilcoxon(d)[1]
+            SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
+        end
+    end end end
+    return g
+end
+
+
+function correlation_graph_ff(data::Array{<:AbstractFloat, 3}; smoothness::Float64=0.3)
+    n = size(data)[2]  # agents count
+    g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
+    for i=1:n for j=1:i if i != j
+        d::Vector{Float64} = diag(cor(data[:, i, :], data[:, j, :]))
+        if median(abs.(d)) > smoothness
             SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
         end
     end end end
