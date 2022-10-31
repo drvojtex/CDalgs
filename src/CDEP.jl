@@ -301,7 +301,7 @@ function cdep_clustering(g::SimpleWeightedGraph)
     compressing!(cdep_graph_c)
     compute_indices!(cdep_graph, cdep_graph_c)
     seed_determination!(cdep_graph_c)
-    if any(v::cdep_vertex -> v.community != 0, cdep_graph_c)
+    if length(filter(v::cdep_vertex -> v.community != 0, cdep_graph_c)) > 1
         expand!(cdep_graph_c)
     end
     propagation(cdep_graph_c, length(Graphs.vertices(g)))
