@@ -121,10 +121,11 @@ v::cdep_vertex - vertex to be density computed.
 g::Vector{cdep_vertex} - original graph before compressing.
 """
 function vertex_density!(v::cdep_vertex, g::Vector{cdep_vertex})
+    @show v
     if length(v.neighbors) == 0 && length(v.included) > 1
         original_v::cdep_vertex = filter(x -> x.id == v.id, g)[1]
         v.density = mapreduce(x -> length(x.neighbors), +, 
-            filter(y -> y.id ∈ keys(original_v.neighbors), g))/length(original_v)
+            filter(y -> y.id ∈ keys(original_v.neighbors), g))/length(original_v.neighbors)
     else
         v.density = length(v.neighbors)
     end
@@ -304,8 +305,9 @@ function cdep_clustering(g::SimpleWeightedGraph)
     if length(filter(v::cdep_vertex -> v.community != 0, cdep_graph_c)) > 1
         expand!(cdep_graph_c)
         propagation(cdep_graph_c, length(Graphs.vertices(g)))
+    else
+        collect(map(x -> 0, Graphs.vertices(g)))
     end
-    collect(map(x -> 0, Graphs.vertices(g)))
 end
 
 cdep_clustering(g::SimpleGraph{Int64}) = cdep_clustering(SimpleWeightedGraph(g))
