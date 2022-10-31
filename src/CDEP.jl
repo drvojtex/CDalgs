@@ -303,8 +303,9 @@ function cdep_clustering(g::SimpleWeightedGraph)
     seed_determination!(cdep_graph_c)
     if length(filter(v::cdep_vertex -> v.community != 0, cdep_graph_c)) > 1
         expand!(cdep_graph_c)
+        propagation(cdep_graph_c, length(Graphs.vertices(g)))
     end
-    propagation(cdep_graph_c, length(Graphs.vertices(g)))
+    collect(map(x -> 0, Graphs.vertices(g)))
 end
 
 cdep_clustering(g::SimpleGraph{Int64}) = cdep_clustering(SimpleWeightedGraph(g))
