@@ -121,7 +121,6 @@ v::cdep_vertex - vertex to be density computed.
 g::Vector{cdep_vertex} - original graph before compressing.
 """
 function vertex_density!(v::cdep_vertex, g::Vector{cdep_vertex})
-    @show v
     if length(v.neighbors) == 0 && length(v.included) > 1
         original_v::cdep_vertex = filter(x -> x.id == v.id, g)[1]
         v.density = mapreduce(x -> length(x.neighbors), +, 
