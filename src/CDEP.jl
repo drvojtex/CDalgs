@@ -245,7 +245,7 @@ g::Vector{cdep_vertex} - graph with assigned seeds but other vertices without co
 """
 function expand!(g::Vector{cdep_vertex})
     tmp_g::Vector{cdep_vertex} = deepcopy(g)
-    while any(x -> x.community == 0, g)
+    while any(x -> x.community == 0, filter(v -> len(v.neighbors) > 0, g))
         for v::cdep_vertex in filter(x -> x.community == 0, g)
             c_neighbors::Vector{Int64} = filter(z -> z != 0, (unique(map(x -> x.community, 
                 filter(y -> y.id ∈ keys(v.neighbors), g)))))
