@@ -124,7 +124,7 @@ function vertex_density!(v::cdep_vertex, g::Vector{cdep_vertex})
     if length(v.neighbors) == 0 && length(v.included) > 1
         original_v::cdep_vertex = filter(x -> x.id == v.id, g)[1]
         v.density = mapreduce(x -> length(x.neighbors), +, 
-            filter(y -> y.id ∈ original_v.neighbors, g))/length(original_v)
+            filter(y -> y.id ∈ keys(original_v.neighbors), g))/length(original_v)
     else
         v.density = length(v.neighbors)
     end
