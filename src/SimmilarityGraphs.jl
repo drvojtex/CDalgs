@@ -61,14 +61,15 @@ end
 """
     correlation_graph(data; outfilter=false)
 
-Create correlation graph of statistically significant 
-correlations of the agents at the given level of significance 0.05. 
-The outliers are of correlation are filtered by the given outfilter method.
+Create correlation graph of the agents by the correlation sreshold smoothness.
+The outliers are filtered by the given outfilter method.
 
 data::Matrix{<:AbstractFloat} - data matrix shape(batch, agents, features).
 outfilter::Function - method of filtering outliers (default ccf - Minimizing a sum of clipped convex functions).
+smoothness::Float64 - treshold of median absolute values of correlations.
 """
-function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter::Function=Nothing)
+function correlation_graph(data::Array{<:AbstractFloat, 3}; 
+        outfilter::Function=Nothing, smoothness::Float64=0.3)
 
     if outfilter == Nothing
         outfilter = ccf
@@ -87,7 +88,7 @@ function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter::Function=
             df[findall(z -> z ∉ outliers, 1:size(df)[1]), :y]
         ))
 
-        if !wilcoxon(d)[1]
+        if median(abs.(d)) > smoothness
             SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
         end
     end end end
