@@ -69,7 +69,7 @@ outfilter::Function - method of filtering outliers (default ccf - Minimizing a s
 smoothness::Float64 - treshold of median absolute values of correlations.
 """
 function correlation_graph(data::Array{<:AbstractFloat, 3}; 
-        outfilter::Function=Nothing, smoothness::Float64=0.3)
+        outfilter=Nothing, smoothness::Float64=0.3)
 
     if outfilter == Nothing
         outfilter = ccf
