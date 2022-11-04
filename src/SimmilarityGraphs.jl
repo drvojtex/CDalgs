@@ -63,36 +63,31 @@ end
 
 Create correlation graph of statistically significant 
 correlations of the agents at the given level of significance 0.05. 
-The outliers are of correlation are filtered by Billor & Chatterjee & Hadi method.
+The outliers are of correlation are filtered by the given outfilter method.
 
 data::Matrix{<:AbstractFloat} - data matrix shape(batch, agents, features).
-outlilter::Bool - if true, use outliers filtering.
+outfilter::Function - method of filtering outliers (default ccf - Minimizing a sum of clipped convex functions).
 """
-function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter=false)
+function correlation_graph(data::Array{<:AbstractFloat, 3}; outfilter::Function=Nothing)
+
+    if outfilter == Nothing
+        outfilter = ccf
+    end
+
     n = size(data)[2]  # agents count
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
-        d::Vector{Float64} = diag(cor(data[:, i, :], data[:, j, :]))
-        if outfilter
-            df::DataFrame = DataFrame(y=d, x=1:length(d))
-            reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
-            outliers::Vector{Int64} = bch(reg)["outliers"]
-            deleteat!(d, outliers)
-        end
+        
+        df::DataFrame = DataFrame(y=data[:, j, :], x=data[:, i, :])
+        reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
+        outliers::Vector{Int64} = ccf(reg)["outliers"]
+        
+        d::Vector{Float64} = diag(cor(
+            df[findall(z -> z ∉ outliers, 1:size(df)[1]), :x],
+            df[findall(z -> z ∉ outliers, 1:size(df)[1]), :y]
+        ))
+
         if !wilcoxon(d)[1]
-            SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
-        end
-    end end end
-    return g
-end
-
-
-function correlation_graph_ff(data::Array{<:AbstractFloat, 3}; smoothness::Float64=0.3)
-    n = size(data)[2]  # agents count
-    g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
-    for i=1:n for j=1:i if i != j
-        d::Vector{Float64} = diag(cor(data[:, i, :], data[:, j, :]))
-        if median(abs.(d)) > smoothness
             SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
         end
     end end end

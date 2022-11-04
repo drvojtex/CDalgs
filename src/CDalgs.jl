@@ -8,7 +8,7 @@ include("NCClustering.jl")
 include("CDEP.jl")
 include("Visualise.jl")
 
-export correlation_graph, correlation_graph_ff
+export correlation_graph
 export nc_clustering, modmax_clustering, louvain_clustering, cdep_clustering
 export gml
 
