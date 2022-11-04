@@ -79,14 +79,20 @@ function correlation_graph(data::Array{<:AbstractFloat, 3};
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
         
-        df::DataFrame = DataFrame(y=data[:, j, :], x=data[:, i, :])
-        reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
-        outliers::Vector{Int64} = ccf(reg)["outliers"]
+        outliers::Set{Int64} = []
+        d::Vector{Float64} = []
+
+        for k=1:size(data)[3]
+            df::DataFrame = DataFrame(y=data[:, j, k], x=data[:, i, k])
+            reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
+            union!(outliers, outfilter(reg)["outliers"])
         
-        d::Vector{Float64} = diag(cor(
-            df[findall(z -> z ∉ outliers, 1:size(df)[1]), :x],
-            df[findall(z -> z ∉ outliers, 1:size(df)[1]), :y]
-        ))
+            append!(d, cor(
+                    df[findall(z -> z ∉ outliers, 1:size(df)[1]), :x],
+                    df[findall(z -> z ∉ outliers, 1:size(df)[1]), :y]
+                )
+            )
+        end
 
         if median(abs.(d)) > smoothness
             SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
