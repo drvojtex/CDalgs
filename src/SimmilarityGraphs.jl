@@ -79,13 +79,12 @@ function correlation_graph(data::Array{<:AbstractFloat, 3};
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
         
-        outliers = Set{Int64}([])
         d::Vector{Float64} = []
 
         for k=1:size(data)[3]
             df::DataFrame = DataFrame(y=data[:, j, k], x=data[:, i, k])
             reg::RegressionSetting = createRegressionSetting(@formula(y~x), df)
-            union!(outliers, outfilter(reg)["outliers"])
+            outliers::Vector{Int64} = outfilter(reg)["outliers"]
         
             append!(d, cor(
                     df[findall(z -> z ∉ outliers, 1:size(df)[1]), :x],
