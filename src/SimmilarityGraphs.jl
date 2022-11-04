@@ -79,7 +79,7 @@ function correlation_graph(data::Array{<:AbstractFloat, 3};
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
     for i=1:n for j=1:i if i != j
         
-        outliers::Set{Int64} = []
+        outliers = Set{Int64}([])
         d::Vector{Float64} = []
 
         for k=1:size(data)[3]
