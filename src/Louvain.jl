@@ -3,15 +3,6 @@ using Graphs, SimpleWeightedGraphs
 using Random, Combinatorics
 
 
-"""
-louvain_update!(c, v, g)
-
-Add vertex to the community to increase modularity.
-
-c::Vector{Int64} - communities vector.
-v::Int64 - the vertex to be updated to the community to increase mdularity
-g::SimpleWeightedGraph{Int64, Float64} - graph.
-"""
 function louvain_update!(c::Vector{Int64}, v::Int64, 
         g::SimpleWeightedGraph{S, T}) where {S<:Integer, T<:Real}
 
@@ -37,13 +28,6 @@ function louvain_update!(c::Vector{Int64}, v::Int64,
     end
 end
 
-"""
-    louvain_communities(g)
-
-Find communities on modularity level.
-
-g::SimpleWeightedGraph{Int64, Float64} - graph.
-"""
 function louvain_communities!(g::SimpleWeightedGraph{S, T}, 
         l::Vector{Vector{Int64}}) where {S<:Integer, T<:Real}
     
@@ -69,13 +53,6 @@ function louvain_communities!(g::SimpleWeightedGraph{S, T},
     return map(x->Dict(unique(c) .=> 1:length(unique(c)))[x], c)
 end
 
-"""
-    louvain_hierarchical(g)
-
-Find hierarchical clustering of communities by modularity levels.
-
-g::SimpleWeightedGraph{Int64, Float64} - graph.
-"""
 function louvain_hierarchical(g::SimpleWeightedGraph{S, T}) where {S<:Integer, T<:Real}
     l::Vector{Vector{Int64}} = [collect(SimpleWeightedGraphs.vertices(g))]
     c::Vector{Int64} = collect(SimpleWeightedGraphs.vertices(g))
@@ -100,14 +77,6 @@ function louvain_hierarchical(g::SimpleWeightedGraph{S, T}) where {S<:Integer, T
     return unique(l)
 end
 
-"""
-    louvain_hierarchical(g)
-
-Local-maxima modularity clustering by louvain algorithm.
-Returns vector of communities.
-
-g::SimpleWeightedGraph{Int64, Float64} - graph.
-"""
 function louvain_clustering(g::SimpleWeightedGraph{S, T}) where {S<:Integer, T<:Real}
     communities::Vector{Vector{Int64}} = louvain_hierarchical(g) 
     communities[argmax(map(c -> Graphs.modularity(g, c; distmx=g.weights), communities))]

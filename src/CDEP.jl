@@ -1,16 +1,27 @@
 
 using Graphs, SimpleWeightedGraphs
+using DocStringExtensions
 
-##############################################
-# vertex structure
 
+"""
+Vertex structure of the CDEP graph representation.
+
+$(FIELDS)
+"""
 Base.@kwdef mutable struct cdep_vertex
+    "Identifier of the vertex."
     id::Integer
+    "Dictionary of neighbors (key, value) = (neighbor identifier, weight)."
     neighbors::Dict{Integer, Float64}
+    "Vertices included by the compression."
     included::Set{Integer} = Set([])
+    "Density meassure of the vertex."
     density::Float64 = 0
+    "Quality meassure of the vertex."
     quality::Float64 = 0
+    "Centrality index meassure of the vertex by density and quality."
     centrality_index::Float64 = 0.0 
+    "Community attendance."
     community::Int64 = 0
 end
 
@@ -32,15 +43,6 @@ end
 ##############################################
 # Compressing
 
-"""
-compress!(g, from, to)
-
-Compress "from" vertex into the "to" vertex.
-
-g::Vector{cdep_vertex} - the graph.
-from::Int64 - source vertex to be compressed.
-to::Int64 - destination vertex.
-"""
 function compress!(g::Vector{cdep_vertex}, from::Int64, to::Int64)
     union!(filter(x -> x.id == to, g)[1].included, from, filter(x -> x.id == from, g)[1].included)
     filter!(x -> x.id != from, g)
@@ -48,13 +50,6 @@ function compress!(g::Vector{cdep_vertex}, from::Int64, to::Int64)
     nothing
 end
 
-"""
-find_triangle(g)
-
-Find triangles in the given graph.
-
-g::Vector{cdep_vertex} - the graph.
-"""
 function find_triangles(g::Vector{cdep_vertex})
     hypotenuse = (x, y) -> x.id ∈ keys(y.neighbors) && y.id ∈ keys(x.neighbors)
     filter(x -> 
@@ -63,17 +58,6 @@ function find_triangles(g::Vector{cdep_vertex})
     , filter(v -> length(v.neighbors) == 2, g))
 end
 
-"""
-update_triangle!(g, vi, vj, vk)
-
-Compress the triangle defined by vertices vi, vj and vk.
-
-g::Vector{T} - the graph.
-vi::T - vertex to be compressed.
-vj::T - destination vertex.
-vk::T - the "third" vertex in the triangle.
-where T<:cdep_vertex
-"""
 function update_triangle!(g::Vector{T}, vi::T, vj::T, vk::T) where T<:cdep_vertex
     c::Float64 = vj.neighbors[vk.id] + 0.5 * vi.neighbors[vk.id] * vi.neighbors[vj.id]
     g[findall(x -> x.id == vj.id, g)][1].neighbors[vk.id] = c
@@ -82,13 +66,6 @@ function update_triangle!(g::Vector{T}, vi::T, vj::T, vk::T) where T<:cdep_verte
     nothing
 end
 
-"""
-compressing!(gc)
-
-Compress given graph (compress vertices of degree 1 and 2).
-
-gc::Vector{cdep_vertex} - the graph to be compressed.
-"""
 function compressing!(gc::Vector{cdep_vertex})
     
     # compress vertices with degree one
@@ -112,14 +89,6 @@ end
 ##############################################
 # Seeding
 
-"""
-vertex_density(v, g)
-
-Compute the density of the given vertex.
-
-v::cdep_vertex - vertex to be density computed. 
-g::Vector{cdep_vertex} - original graph before compressing.
-"""
 function vertex_density!(v::cdep_vertex, g::Vector{cdep_vertex})
     if length(v.neighbors) == 0 && length(v.included) > 1
         original_v::cdep_vertex = filter(x -> x.id == v.id, g)[1]
@@ -131,27 +100,11 @@ function vertex_density!(v::cdep_vertex, g::Vector{cdep_vertex})
     nothing
 end
 
-"""
-vertex_quality(v, g)
-
-Compute the quality of the given vertex.
-
-v::cdep_vertex - vertex to be quality computed. 
-gc::Vector{cdep_vertex} - graph after compressing.
-"""
 function vertex_quality!(v::cdep_vertex)
     v.quality = length(v.included)
     nothing
 end
 
-"""
-compute_indices!(gc)
-
-Compute the density and quality for vertices of the compressed graph.
-
-g::Vector{cdep_vertex} - original graph before seeding.
-gc::Vector{cdep_vertex} - compressed graph after the seeding.
-"""
 function compute_indices!(g::Vector{cdep_vertex}, gc::Vector{cdep_vertex})
     
     map(v::cdep_vertex -> vertex_quality!(v), gc)
@@ -165,13 +118,6 @@ function compute_indices!(g::Vector{cdep_vertex}, gc::Vector{cdep_vertex})
     nothing
 end
 
-"""
-seed_determination!(gc)
-
-Determine community seeds of the graph
-
-gc::Vector{cdep_vertex} - graph.
-"""
 function seed_determination!(gc::Vector{cdep_vertex})
     γ::Vector{Float64} = sort(map(x -> x.centrality_index, gc), rev=true)
     h::Vector{Float64} = []
@@ -200,15 +146,6 @@ end
 ##############################################
 # Expansion
 
-"""
-simmilarity(vertex, community, g)
-
-Compute the simmilarity between community and vertex.
-
-vertex::Int64 - id of the vertex.
-community::Int64 - id of the community.
-g::Vector{cdep_vertex} - graph.
-"""
 function simmilarity(vertex::Int64, community::Int64, g::Vector{cdep_vertex})
     u::cdep_vertex = filter(x -> x.id == vertex, g)[1]
 
@@ -236,13 +173,6 @@ function simmilarity(vertex::Int64, community::Int64, g::Vector{cdep_vertex})
     return sim_1 + sim_2
 end
 
-"""
-expand!(g)
-
-Assign communities to the vertices by the assigned seeds.
-
-g::Vector{cdep_vertex} - graph with assigned seeds but other vertices without communities assigned.
-"""
 function expand!(g::Vector{cdep_vertex})
     tmp_g::Vector{cdep_vertex} = deepcopy(g)
     while any(x -> x.community == 0, filter(v -> length(v.neighbors) > 0, g))
@@ -261,14 +191,6 @@ function expand!(g::Vector{cdep_vertex})
     nothing
 end
 
-"""
-propagation(gc, vc)
-
-Assign communities to the vertices by the assigned seeds.
-
-gc::Vector{cdep_vertex} - compressed graph with assigned communities.
-vc::Int64 - count of vertices in the original graph.
-"""
 function propagation(gc::Vector{cdep_vertex}, vc::Int64)
     result::Vector{Int64} = zeros(vc)
     for v::cdep_vertex in gc
@@ -280,13 +202,6 @@ function propagation(gc::Vector{cdep_vertex}, vc::Int64)
     return result
 end
 
-"""
-    cdep_clustering(g)
-
-Find communities by CDEP algorithm for a given graph.
-
-g::SimpleWeightedGraph - graph to be explored.
-"""
 function cdep_clustering(g::SimpleWeightedGraph)
     cdep_graph::Vector{cdep_vertex} = []
     for v::Int64 in Graphs.vertices(g)

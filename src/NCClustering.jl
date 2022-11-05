@@ -3,18 +3,6 @@ using Graphs, SimpleWeightedGraphs
 using DataStructures
 
 
-"""
-    nc_update_community!(g, ranking, community, priorities)
-
-Add the neighbor of current community (which leads to local maximum ranking of the community, 
-but the ranking must be greater equal 9/10). In case two ranking-equal new possible communities, 
-follow priority vector sorting.
-
-g::SimpleWeightedGraph - given graph.
-ranking::Function - function to get ranking of the current community.
-community::Vector - current community to be updated.
-priorities::Vector - vertices sorted by the priority by which the vertices should be added.
-"""
 function nc_update_community!(g::SimpleWeightedGraph{S, T}, ranking::Function,
         community::Vector{Int64}, priorities::Vector{Int64}; α::Float64=0.95) where {S<:Integer, T<:Real}
 
@@ -33,17 +21,6 @@ function nc_update_community!(g::SimpleWeightedGraph{S, T}, ranking::Function,
     return α <= ranking(new_community) ? new_community : community
 end
 
-"""
-    nc_community(g, v, ranking, priorities; α)
-
-While there can be updated community starting from given vertex v::Int64, expand.
-
-g::SimpleWeightedGraph - given graph.
-v::Int64 - starting vertex.
-ranking::Function - function to get ranking of the current community.
-priorities::Vector - vertices sorted by the priority by which the vertices should be added.
-α::Float64 - minimal ranking score of the community.
-"""
 function nc_community(g::SimpleWeightedGraph{S, T}, v::Int64, 
         ranking::Function, priorities::Vector{Int64}; α::Float64=0.95) where {S<:Integer, T<:Real}
 
@@ -55,17 +32,6 @@ function nc_community(g::SimpleWeightedGraph{S, T}, v::Int64,
     end
 end
 
-"""
-    nc_clustering(g; ranking=x->r(x))
-
-Find the near-clique-communities in the given graph g::SimpleWeightedGraph{Int64, Float64} by the 
-ranking function (default graph density) and priority sorting (default degree of vertex).
-
-Default ranking is given as:
-```
-(x::Vector{Int64}, g::SimpleWeightedGraph{Int64, Float64}) -> length(x) == 1 ? 1 : density(g[x])
-```
-"""
 function nc_clustering(g::SimpleWeightedGraph{S, T}; 
         ranking=Nothing, priority=Nothing, α::Float64=0.95) where {S<:Integer, T<:Real}
 

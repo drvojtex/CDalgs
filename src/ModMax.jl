@@ -3,15 +3,6 @@ using Graphs, SimpleWeightedGraphs
 using Random
 
 
-"""
-    modmax_update!(c, v, g)
-
-Update vertex community to increase modularity.
-
-c::Vector - communities vector.
-v::Int64 - the vertex to be updated to the community to increase mdularity
-g::SimpleWeightedGraph - graph.
-"""
 function modmax_update!(c::Vector, v::Int64,
         g::SimpleWeightedGraph{S, T}) where {S<:Integer, T<:Real}
     
@@ -41,19 +32,6 @@ function modmax_update!(c::Vector, v::Int64,
     end
 end
 
-"""
-    modmax_clustering(g)
-
-Find the communities for which has that division the maxmimal modularity.
-
-    A random permutation of the vertices of the graph is traversed, 
-    with the currently iterating vertex being assigned to the community 
-    so that the modularity of the graph is locally maximized. The algorithm 
-    stops at the moment when changing the community of even one vertex 
-    does not lead to the growth of modularity.
-
-g::SimpleWeightedGraph - given graph.
-"""
 function modmax_clustering(g::SimpleWeightedGraph)
     V::Vector = randperm(length(SimpleWeightedGraphs.vertices(g))) 
     c::Vector{Int64} = collect(SimpleWeightedGraphs.vertices(g))

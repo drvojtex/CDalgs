@@ -3,19 +3,6 @@ using Erdos
 using Plots
 
 
-"""
-    gml(fadjlist, communities, path)
-
-fadjlist::Vector{Vector{<:Real}} - vector of neighbors vectors for each vertex.
-communities::Vector{Vector{<:Real}} - vector of communities vectors.
-communities::Vector{<:Real} - vector of vertices assigments to the communities.
-path::String - path to the *.gml file.
-
-e.g. communities:
-[[1,2], [3, 4], [5]]
-is equal to
-[1, 1, 2, 2, 3]
-"""
 function gml(fadjlist::T, communities::T, path::String) where T<:Vector{Vector{U}} where U<:Real
     
         edge_in_component = (x, y) -> length(filter(xy-> x ∈ xy && y ∈ xy, communities)) > 0

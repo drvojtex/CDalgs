@@ -1,1 +1,4 @@
-# FeaturesRelevance
+# Community detection algorithms
+
+#TODO: curves.ipynb
+
