@@ -31,14 +31,16 @@ $(DocumentFunction.documentfunction(correlation_graph;
     2-D case:
         Create correlation graph of statistically significant 
         correlations (Correlation t-test) of the agents at the given level of significance.
+        Data matrix shape(batch, agents).
 
     3-D case:
         Create correlation graph of the agents by the correlation treshold smoothness.
         The outliers are filtered by the given outfilter method.
+        Data tensor shape(batch, agents, features).
     ",
-    argtext=Dict("data (2-D case)"=>"data matrix shape(batch, agents)",
-                 "α"=>"level of significance (default 0.05)",
-                 "data (3-D case)"=>"data matrix shape(batch, agents, features)",
+    argtext=Dict("data::Matrix{<:AbstractFloat}"=>"",
+                 "data::Array{<:AbstractFloat, 3}"=>""),
+    keytext=Dict("α"=>"level of significance (default 0.05)",
                  "outfilter"=>"method of filtering outliers (default ccf - Minimizing a sum of clipped convex functions)",
                  "smoothness"=>"treshold of median absolute values of correlations")))
                  

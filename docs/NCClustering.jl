@@ -20,8 +20,8 @@ $(DocumentFunction.documentfunction(nc_community;
     location=false,
     maintext="While there can be updated community starting from given vertex v::Int64, expand.",
     argtext=Dict("g"=>"given graph",
-                 "v"=>"starting vertex",
-                 "ranking"=>"function to get ranking of the current community",
+                 "v"=>"starting vertex"),
+    keytext=Dict("ranking"=>"function to get ranking of the current community",
                  "priorities"=>"vertices sorted by the priority by which the vertices should be added",
                  "α"=>"minimal ranking score of the community")))
 """ nc_community
@@ -38,5 +38,8 @@ $(DocumentFunction.documentfunction(nc_clustering;
         (x::Vector{Int64}, g::SimpleWeightedGraph{Int64, Float64}) -> length(x) == 1 ? 1 : density(g[x])
         ```
     ",
-    argtext=Dict("g"=>"given graph")))
+    argtext=Dict("g"=>"given graph"),
+    keytext=Dict("ranking"=>"function to get ranking of the current community",
+                 "priorities"=>"vertices sorted by the priority by which the vertices should be added",
+                 "α"=>"minimal ranking score of the community")))
 """ nc_clustering
