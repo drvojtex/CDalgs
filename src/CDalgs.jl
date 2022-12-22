@@ -7,7 +7,7 @@ include("ModMax.jl")
 include("NCClustering.jl")
 include("CDEP.jl")
 include("Visualise.jl")
-include("DWT.jl")
+include("DTW.jl")
 
 include("../docs/CDEP.jl")
 include("../docs/Louvain.jl")
