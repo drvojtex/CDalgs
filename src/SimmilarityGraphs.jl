@@ -88,7 +88,7 @@ function dtw_graph(data::Array{<:AbstractFloat, 3})
 
     for i=1:n for j=1:i if i != j
         
-        path::Vector{Tuple{Int64, Int64}} = dtw_path(dtw(data[:, j, :], data[:, i, :]))
+        path::Vector{Tuple{Int64, Int64}} = dtw_path(dtw(data[j, :, :], data[i, :, :]))
         for p in path
             incr_edge!(g, p[1], p[2])
         end
