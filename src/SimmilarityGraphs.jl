@@ -78,7 +78,7 @@ function dtw_graph(data::Array{<:AbstractFloat, 3})
     g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
 
     function incr_edge!(g::SimpleWeightedGraph, v1::Integer, v2::Integer)
-        if SimpleWeightedGraph.has_edge(g, v1, v2)
+        if SimpleWeightedGraphs.has_edge(g, v1, v2)
             g.weights[v1, v2] += 1
             g.weights[v2, v1] += 1
         else
