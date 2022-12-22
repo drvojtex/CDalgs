@@ -7,7 +7,7 @@ Base.@kwdef mutable struct dtw_point
 end
 
 function dtw(s, t) 
-    n::Int64, m::Int64 = length(s), length(t)
+    n::Int64, m::Int64 = size(s)[1], size(t)[1]
     dtw_matrix::Matrix{dtw_point} = map(deepcopy, fill(dtw_point(), n+1, m+1))
     dtw_matrix[1, 1].c = 0
 
