@@ -4,7 +4,7 @@ using LinearAlgebra, LinRegOutliers
 using Statistics, HypothesisTests, DataFrames
 using ThreadTools
 
-
+#=
 function wilcoxon(xydiff::Vector{<:AbstractFloat})
     if length(xydiff) == 0 return true end
     df = DataFrame(diff = xydiff, absdiff = abs.(xydiff))
@@ -66,6 +66,33 @@ function correlation_graph(data::Array{<:AbstractFloat, 3};
         if median(abs.(d)) > smoothness
             SimpleWeightedGraphs.add_edge!(g, i, j, median(d))
         end
+    end end end
+    return g
+end
+
+=#
+
+function dtw_graph(data::Array{<:AbstractFloat, 3})
+
+    n = size(data)[2]  # agents count
+    g::SimpleWeightedGraph{Int64} = SimpleWeightedGraph(n)
+
+    function incr_edge!(g::SimpleWeightedGraph, v1::Integer, v2::Integer)
+        if has_edge(g, v1, v2)
+            g.weights[v1, v2] += 1
+            g.weights[v2, v1] += 1
+        else
+            SimpleWeightedGraphs.add_edge!(g, v1, v2, 1)
+        end
+    end
+
+    for i=1:n for j=1:i if i != j
+        
+        path::Vector{Tuple{Int64, Int64}} = dtw_path(dtw(data[:, j, :], data[:, i, :]))
+        for p in path
+            incr_edge!(g, p[1], p[2])
+        end
+        
     end end end
     return g
 end

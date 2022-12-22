@@ -1,7 +1,7 @@
 
 using DocumentFunction
 
-
+#=
 @doc """
 $(DocumentFunction.documentfunction(wilcoxon;
     location=false,
@@ -45,3 +45,16 @@ $(DocumentFunction.documentfunction(correlation_graph;
                  "smoothness"=>"treshold of median absolute values of correlations")))
                  
 """ correlation_graph
+=#
+
+@doc """
+$(DocumentFunction.documentfunction(dtw_graph;
+    location=false,
+    maintext="
+    3-D case:
+        Create simmilarity graph of the agents by the dynamic time warping.
+        Data tensor shape(batch, agents, features).
+    ",
+    argtext=Dict("data::Array{<:AbstractFloat, 3}"=>"")))
+                 
+""" dtw_graph
