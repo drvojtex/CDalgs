@@ -16,7 +16,7 @@ function louvain_update!(c::Vector{Int64}, v::Int64,
     ΔM_max::Float64 = -Inf
     old_c::Vector{Int64} = deepcopy(c)
 
-    for ĉ::Int64 in setdiff(c[SimpleWeightedGraphs.neighbors(g, v)], v)
+    for ĉ::Int64 in setdiff(c[Graphs.neighbors(g, v)], v)
         C::Vector{Int64} = findall(x -> old_c[x] == ĉ, SimpleWeightedGraphs.vertices(g))
         Σtot::Float64 = sum(view(g.weights, C, :))
         kᵢin::Float64 = sum(view(vec_kᵢ, C))
