@@ -9,7 +9,7 @@ function nc_update_community!(g::SimpleWeightedGraph{S, T}, ranking::Function,
     # vector of neighbors of the community without any community assigment
     N::Vector{Int64} = intersect(
         setdiff(unique(mapreduce(
-            x -> neighbors(g, x), vcat, community
+            x -> Graphs.neighbors(g, x), vcat, community
         )), community),
         priorities
     )
