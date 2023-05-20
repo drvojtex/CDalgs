@@ -4,7 +4,7 @@ using LinearAlgebra, LinRegOutliers
 using Statistics, HypothesisTests, DataFrames
 using ThreadTools
 
-#=
+
 function wilcoxon(xydiff::Vector{<:AbstractFloat})
     if length(xydiff) == 0 return true end
     df = DataFrame(diff = xydiff, absdiff = abs.(xydiff))
@@ -69,8 +69,6 @@ function correlation_graph(data::Array{<:AbstractFloat, 3};
     end end end
     return g
 end
-
-=#
 
 function dtw_graph(data::Array{<:AbstractFloat, 3})
 

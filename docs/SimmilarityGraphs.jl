@@ -1,7 +1,7 @@
 
 using DocumentFunction
 
-#=
+
 @doc """
 $(DocumentFunction.documentfunction(wilcoxon;
     location=false,
@@ -45,7 +45,7 @@ $(DocumentFunction.documentfunction(correlation_graph;
                  "smoothness"=>"treshold of median absolute values of correlations")))
                  
 """ correlation_graph
-=#
+
 
 @doc """
 $(DocumentFunction.documentfunction(dtw_graph;
