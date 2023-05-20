@@ -1,6 +1,6 @@
 name = "CDalgs"
 uuid = "dc4acc6f-d9a9-4ba8-98e9-fccaa68c058a"
-authors = ["kozvojtex <kozvojtex.github@gmail.com>"]
+authors = ["drvojtex <drvojtex.github@gmail.com>"]
 version = "0.1.0"
 
 [deps]
